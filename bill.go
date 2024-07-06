@@ -8,14 +8,57 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func (a NYSenateAPI) Bills(ctx context.Context, session string, offset int) (*BillsResponse, error) {
+	if session == "" {
+		return nil, nil
+	}
+	params := &url.Values{"offset": []string{fmt.Sprintf("%d", offset)}, "limit": []string{"1000"}}
+	path := fmt.Sprintf("/api/3/bills/%s", url.PathEscape(session))
+	var data BillsResponse
+	log.WithContext(ctx).WithField("session", session).Infof("looking for bills %s", session)
+	err := a.get(ctx, path, params, &data)
+	return &data, err
+}
+
+type BillReference struct {
+	BasePrintNo string `json:"basePrintNo"`
+	Session     int    `json:"session"`
+	PrintNo     string `json:"printNo"`
+	BillType    struct {
+		Chamber    string `json:"chamber"`
+		Desc       string `json:"desc"`
+		Resolution bool   `json:"resolution"`
+	} `json:"billType"`
+	Title             string `json:"title"`
+	ActiveVersion     string `json:"activeVersion"`
+	Year              int    `json:"year"`
+	PublishedDateTime string `json:"publishedDateTime"`
+}
+
+type BillsResponse struct {
+	Success      bool   `json:"success"`
+	Message      string `json:"message"`
+	ResponseType string `json:"responseType"`
+	Total        int    `json:"total"`
+	OffsetStart  int    `json:"offsetStart"`
+	OffsetEnd    int    `json:"offsetEnd"`
+	Limit        int    `json:"limit"`
+	Result       struct {
+		Items []BillReference `json:"items"`
+		Size  int             `json:"size"`
+	} `json:"result"`
+}
+
 func (a NYSenateAPI) GetBill(ctx context.Context, session, printNo string) (*Bill, error) {
 	if session == "" || printNo == "" {
 		return nil, nil
 	}
+	params := &url.Values{}
+	params.Set("view", "with_refs")
 	path := fmt.Sprintf("/api/3/bills/%s/%s", url.PathEscape(session), url.PathEscape(printNo))
 	var data BillResponse
 	log.WithContext(ctx).WithField("session", session).WithField("printNo", printNo).Infof("looking up bill %s-%s", session, printNo)
-	err := a.get(ctx, path, nil, &data)
+	err := a.get(ctx, path, params, &data)
 	return &(data.Bill), err
 }
 

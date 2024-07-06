@@ -48,7 +48,6 @@ func (a NYSenateAPI) get(ctx context.Context, path string, params *url.Values, v
 		params = &url.Values{}
 	}
 	params.Set("key", a.token)
-	params.Set("view", "with_refs")
 	u := apiDomain + path
 	log.WithContext(ctx).WithField("nysenate_api", u+"?"+params.Encode()).Debug("NYSenateAPI.get")
 	req, err := http.NewRequestWithContext(ctx, "GET", u+"?"+params.Encode(), nil)

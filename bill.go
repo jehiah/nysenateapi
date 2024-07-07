@@ -122,10 +122,10 @@ type Bill struct {
 		Resolution bool   `json:"resolution"`
 	} `json:"billType"`
 	Title             string `json:"title"`
-	ActiveVersion     string `json:"activeVersion"`
+	ActiveVersion     string `json:"activeVersion,omitempty"`
 	Year              int    `json:"year"`
 	PublishedDateTime string `json:"publishedDateTime"`
-	SubstitutedBy     BillID `json:"substitutedBy"`
+	SubstitutedBy     BillID `json:"substitutedBy,omitempty"`
 	Sponsor           struct {
 		Member MemberEntry `json:"member"`
 		Budget bool        `json:"budget"`
@@ -138,7 +138,7 @@ type Bill struct {
 		StatusDesc    string      `json:"statusDesc"`
 		ActionDate    string      `json:"actionDate"`
 		CommitteeName string      `json:"committeeName"`
-		BillCalNo     interface{} `json:"billCalNo"`
+		BillCalNo     interface{} `json:"billCalNo,omitempty"`
 	} `json:"status"`
 	Milestones struct {
 		Items []struct {
@@ -146,30 +146,30 @@ type Bill struct {
 			StatusDesc    string      `json:"statusDesc"`
 			ActionDate    string      `json:"actionDate"`
 			CommitteeName string      `json:"committeeName"`
-			BillCalNo     interface{} `json:"billCalNo"`
-		} `json:"items"`
+			BillCalNo     interface{} `json:"billCalNo,omitempty"`
+		} `json:"items,omitempty"`
 		Size int `json:"size"`
 	} `json:"milestones"`
 	ProgramInfo struct {
 		Name       string `json:"name"`
 		SequenceNo int    `json:"sequenceNo"`
-	} `json:"programInfo"`
+	} `json:"programInfo,omitempty"`
 	Amendments struct {
 		Items map[string]struct {
 			BillID
 			PublishDate string `json:"publishDate"`
 			SameAs      struct {
-				Items []BillID `json:"items"`
+				Items []BillID `json:"items,omitempty"`
 				Size  int      `json:"size"`
-			} `json:"sameAs"`
+			} `json:"sameAs,omitempty"`
 			Memo             string          `json:"memo"`
 			LawSection       string          `json:"lawSection"`
 			LawCode          string          `json:"lawCode"`
 			ActClause        string          `json:"actClause"`
 			FullTextFormats  []string        `json:"fullTextFormats"`
 			FullText         string          `json:"fullText"`
-			FullTextHTML     interface{}     `json:"fullTextHtml"`
-			FullTextTemplate interface{}     `json:"fullTextTemplate"`
+			FullTextHTML     interface{}     `json:"fullTextHtml,omitempty"`
+			FullTextTemplate interface{}     `json:"fullTextTemplate,omitempty"`
 			CoSponsors       MemberEntryList `json:"coSponsors"`
 			MultiSponsors    MemberEntryList `json:"multiSponsors"`
 			UniBill          bool            `json:"uniBill"`
@@ -178,9 +178,9 @@ type Bill struct {
 		Size int `json:"size"`
 	} `json:"amendments"`
 	Votes struct {
-		Items []BillVote `json:"items"`
+		Items []BillVote `json:"items,omitempty"`
 		Size  int        `json:"size"`
-	} `json:"votes"`
+	} `json:"votes,omitempty"`
 	VetoMessages struct {
 		Items []struct {
 			BillID     BillID      `json:"billId"`
@@ -194,17 +194,17 @@ type Bill struct {
 			LineEnd    int         `json:"lineEnd"`
 			Signer     string      `json:"signer"`
 			SignedDate interface{} `json:"signedDate"`
-		} `json:"items"`
+		} `json:"items,omitempty"`
 		Size int `json:"size"`
-	} `json:"vetoMessages"`
+	} `json:"vetoMessages,omitempty"`
 	ApprovalMessage struct {
-		BillID         BillID `json:"billId"`
+		BillID         BillID `json:"billId,omitempty"`
 		Year           int    `json:"year"`
 		ApprovalNumber int    `json:"approvalNumber"`
 		Chapter        int    `json:"chapter"`
 		Signer         string `json:"signer"`
 		Text           string `json:"text"`
-	} `json:"approvalMessage"`
+	} `json:"approvalMessage,omitempty"`
 	AdditionalSponsors MemberEntryList `json:"additionalSponsors"`
 	PastCommittees     struct {
 		Items []struct {
@@ -212,9 +212,9 @@ type Bill struct {
 			Name          string `json:"name"`
 			SessionYear   int    `json:"sessionYear"`
 			ReferenceDate string `json:"referenceDate"`
-		} `json:"items"`
+		} `json:"items,omitempty"`
 		Size int `json:"size"`
-	} `json:"pastCommittees"`
+	} `json:"pastCommittees,omitempty"`
 	Actions struct {
 		Items []struct {
 			BillID     BillID `json:"billId"`
@@ -222,13 +222,13 @@ type Bill struct {
 			Chamber    string `json:"chamber"`
 			SequenceNo int    `json:"sequenceNo"`
 			Text       string `json:"text"`
-		} `json:"items"`
+		} `json:"items,omitempty"`
 		Size int `json:"size"`
 	} `json:"actions"`
 	PreviousVersions struct {
-		Items []BillID `json:"items"`
+		Items []BillID `json:"items,omitempty"`
 		Size  int      `json:"size"`
-	} `json:"previousVersions"`
+	} `json:"previousVersions,omitempty"`
 	CommitteeAgendas struct {
 		Items []struct {
 			AgendaID struct {
@@ -239,20 +239,20 @@ type Bill struct {
 				Chamber string `json:"chamber"`
 				Name    string `json:"name"`
 			} `json:"committeeId"`
-		} `json:"items"`
+		} `json:"items,omitempty"`
 		Size int `json:"size"`
-	} `json:"committeeAgendas"`
+	} `json:"committeeAgendas,omitempty"`
 	Calendars struct {
 		Items []struct {
 			Year           int `json:"year"`
 			CalendarNumber int `json:"calendarNumber"`
-		} `json:"items"`
+		} `json:"items,omitempty"`
 		Size int `json:"size"`
-	} `json:"calendars"`
+	} `json:"calendars,omitempty"`
 	BillInfoRefs struct {
 		Items interface{} `json:"items"`
 		Size  int         `json:"size"`
-	} `json:"billInfoRefs"`
+	} `json:"billInfoRefs,omitempty"`
 }
 
 type BillVote struct {

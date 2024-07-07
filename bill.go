@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,11 +21,26 @@ func (a NYSenateAPI) Bills(ctx context.Context, session string, offset int) (*Bi
 	return &data, err
 }
 
+const timeFormat = "2006-01-02T15:04:05"
+
+// GetBillUpdates returns a list of bills that have been updated in the given time range.
+// https://legislation.nysenate.gov/static/docs/html/bills.html#detailed-update-digests
+func (a NYSenateAPI) GetBillUpdates(ctx context.Context, from, to time.Time) (*BillUpdateResponse, error) {
+	// /api/3/bills/updates/{fromDateTime}
+	// should be inputted as 2014-12-10T13:30:02.
+	// The fromDateTime and toDateTime range is exclusive/inclusive respectively.
+	path := fmt.Sprintf("/api/3/bills/updates/%s/%s", from.Format(timeFormat), to.Format(timeFormat))
+	params := &url.Values{}
+	params.Set("type", "processed")
+	params.Set("detail", "false")
+	var data BillUpdateResponse
+	err := a.get(ctx, path, params, &data)
+	return &data, err
+}
+
 type BillReference struct {
-	BasePrintNo string `json:"basePrintNo"`
-	Session     int    `json:"session"`
-	PrintNo     string `json:"printNo"`
-	BillType    struct {
+	BillID
+	BillType struct {
 		Chamber    string `json:"chamber"`
 		Desc       string `json:"desc"`
 		Resolution bool   `json:"resolution"`
@@ -35,7 +51,30 @@ type BillReference struct {
 	PublishedDateTime string `json:"publishedDateTime"`
 }
 
-type BillsResponse struct {
+type BillID struct {
+	BasePrintNo    string `json:"basePrintNo"`
+	Session        int    `json:"session"`
+	BasePrintNoStr string `json:"basePrintNoStr,omitempty"`
+	PrintNo        string `json:"printNo,omitempty"`
+	Version        string `json:"version,omitempty"`
+}
+
+type BillUpdate struct {
+	ID              BillID `json:"id"`
+	ContentType     string `json:"contentType"`     // i.e. "BILL"
+	SourceID        string `json:"sourceId"`        // i.e. "2019-02-13-09.01.14.643609_LDSPON_S01826.XML-1-LDSPON",
+	SourceDateTime  string `json:"sourceDateTime"`  // i.e. "2019-02-13T09:01:14.643609",
+	ProcessDateTime string `json:"processDateTime"` // i.e. "2019-02-13T09:06:09.796845"
+}
+
+type BillUpdateResponse struct {
+	Envelope
+	Result struct {
+		Items []BillUpdate `json:"items"`
+	}
+}
+
+type Envelope struct {
 	Success      bool   `json:"success"`
 	Message      string `json:"message"`
 	ResponseType string `json:"responseType"`
@@ -43,7 +82,11 @@ type BillsResponse struct {
 	OffsetStart  int    `json:"offsetStart"`
 	OffsetEnd    int    `json:"offsetEnd"`
 	Limit        int    `json:"limit"`
-	Result       struct {
+}
+
+type BillsResponse struct {
+	Envelope
+	Result struct {
 		Items []BillReference `json:"items"`
 		Size  int             `json:"size"`
 	} `json:"result"`
@@ -63,10 +106,8 @@ func (a NYSenateAPI) GetBill(ctx context.Context, session, printNo string) (*Bil
 }
 
 type BillResponse struct {
-	Success      bool   `json:"success"`
-	Message      string `json:"message"`
-	ResponseType string `json:"responseType"`
-	Bill         Bill   `json:"result"`
+	Envelope
+	Bill Bill `json:"result"`
 }
 
 // from https://legislation.nysenate.gov/static/docs/html/bills.html
@@ -83,12 +124,8 @@ type Bill struct {
 	ActiveVersion     string `json:"activeVersion"`
 	Year              int    `json:"year"`
 	PublishedDateTime string `json:"publishedDateTime"`
-	SubstitutedBy     struct {
-		BasePrintNo    string `json:"basePrintNo"`
-		Session        int    `json:"session"`
-		BasePrintNoStr string `json:"basePrintNoStr"`
-	} `json:"substitutedBy"`
-	Sponsor struct {
+	SubstitutedBy     BillID `json:"substitutedBy"`
+	Sponsor           struct {
 		Member MemberEntry `json:"member"`
 		Budget bool        `json:"budget"`
 		Rules  bool        `json:"rules"`
@@ -118,20 +155,11 @@ type Bill struct {
 	} `json:"programInfo"`
 	Amendments struct {
 		Items map[string]struct {
-			BasePrintNo    string `json:"basePrintNo"`
-			Session        int    `json:"session"`
-			BasePrintNoStr string `json:"basePrintNoStr"`
-			PrintNo        string `json:"printNo"`
-			Version        string `json:"version"`
-			PublishDate    string `json:"publishDate"`
-			SameAs         struct {
-				Items []struct {
-					BasePrintNo string `json:"basePrintNo"`
-					Session     int    `json:"session"`
-					PrintNo     string `json:"printNo"`
-					Version     string `json:"version"`
-				} `json:"items"`
-				Size int `json:"size"`
+			BillID
+			PublishDate string `json:"publishDate"`
+			SameAs      struct {
+				Items []BillID `json:"items"`
+				Size  int      `json:"size"`
 			} `json:"sameAs"`
 			Memo             string          `json:"memo"`
 			LawSection       string          `json:"lawSection"`
@@ -154,12 +182,7 @@ type Bill struct {
 	} `json:"votes"`
 	VetoMessages struct {
 		Items []struct {
-			BillID struct {
-				BasePrintNo string `json:"basePrintNo"`
-				Session     int    `json:"session"`
-				PrintNo     string `json:"printNo"`
-				Version     string `json:"version"`
-			} `json:"billId"`
+			BillID     BillID      `json:"billId"`
 			Year       int         `json:"year"`
 			VetoNumber int         `json:"vetoNumber"`
 			MemoText   string      `json:"memoText"`
@@ -174,12 +197,7 @@ type Bill struct {
 		Size int `json:"size"`
 	} `json:"vetoMessages"`
 	ApprovalMessage struct {
-		BillID struct {
-			BasePrintNo string `json:"basePrintNo"`
-			Session     int    `json:"session"`
-			PrintNo     string `json:"printNo"`
-			Version     string `json:"version"`
-		} `json:"billId"`
+		BillID         BillID `json:"billId"`
 		Year           int    `json:"year"`
 		ApprovalNumber int    `json:"approvalNumber"`
 		Chapter        int    `json:"chapter"`
@@ -198,12 +216,7 @@ type Bill struct {
 	} `json:"pastCommittees"`
 	Actions struct {
 		Items []struct {
-			BillID struct {
-				BasePrintNo string `json:"basePrintNo"`
-				Session     int    `json:"session"`
-				PrintNo     string `json:"printNo"`
-				Version     string `json:"version"`
-			} `json:"billId"`
+			BillID     BillID `json:"billId"`
 			Date       string `json:"date"`
 			Chamber    string `json:"chamber"`
 			SequenceNo int    `json:"sequenceNo"`
@@ -212,13 +225,8 @@ type Bill struct {
 		Size int `json:"size"`
 	} `json:"actions"`
 	PreviousVersions struct {
-		Items []struct {
-			BasePrintNo string `json:"basePrintNo"`
-			Session     int    `json:"session"`
-			PrintNo     string `json:"printNo"`
-			Version     string `json:"version"`
-		} `json:"items"`
-		Size int `json:"size"`
+		Items []BillID `json:"items"`
+		Size  int      `json:"size"`
 	} `json:"previousVersions"`
 	CommitteeAgendas struct {
 		Items []struct {

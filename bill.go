@@ -98,7 +98,7 @@ func (a NYSenateAPI) GetBill(ctx context.Context, session, printNo string) (*Bil
 		return nil, nil
 	}
 	params := &url.Values{}
-	params.Set("view", "with_refs")
+	// params.Set("view", "with_refs")
 	path := fmt.Sprintf("/api/3/bills/%s/%s", url.PathEscape(session), url.PathEscape(printNo))
 	var data BillResponse
 	log.WithContext(ctx).WithField("session", session).WithField("printNo", printNo).Debugf("looking up bill %s-%s", session, printNo)
@@ -151,8 +151,8 @@ type Bill struct {
 		Size int `json:"size"`
 	} `json:"milestones"`
 	ProgramInfo struct {
-		Name       string `json:"name"`
-		SequenceNo int    `json:"sequenceNo"`
+		Name       string `json:"name,omitempty"`
+		SequenceNo int    `json:"sequenceNo,omitempty"`
 	} `json:"programInfo,omitempty"`
 	Amendments struct {
 		Items map[string]struct {
@@ -160,7 +160,7 @@ type Bill struct {
 			PublishDate string `json:"publishDate"`
 			SameAs      struct {
 				Items []BillID `json:"items,omitempty"`
-				Size  int      `json:"size"`
+				Size  int      `json:"size,omitempty"`
 			} `json:"sameAs,omitempty"`
 			Memo             string          `json:"memo"`
 			LawSection       string          `json:"lawSection"`
@@ -174,12 +174,12 @@ type Bill struct {
 			MultiSponsors    MemberEntryList `json:"multiSponsors"`
 			UniBill          bool            `json:"uniBill"`
 			Stricken         bool            `json:"stricken"`
-		} `json:"items"`
+		} `json:"items,omitempty"`
 		Size int `json:"size"`
 	} `json:"amendments"`
 	Votes struct {
 		Items []BillVote `json:"items,omitempty"`
-		Size  int        `json:"size"`
+		Size  int        `json:"size,omitempty"`
 	} `json:"votes,omitempty"`
 	VetoMessages struct {
 		Items []struct {
@@ -195,7 +195,7 @@ type Bill struct {
 			Signer     string      `json:"signer"`
 			SignedDate interface{} `json:"signedDate"`
 		} `json:"items,omitempty"`
-		Size int `json:"size"`
+		Size int `json:"size,omitempty"`
 	} `json:"vetoMessages,omitempty"`
 	ApprovalMessage struct {
 		BillID         BillID `json:"billId,omitempty"`
@@ -213,7 +213,7 @@ type Bill struct {
 			SessionYear   int    `json:"sessionYear"`
 			ReferenceDate string `json:"referenceDate"`
 		} `json:"items,omitempty"`
-		Size int `json:"size"`
+		Size int `json:"size,omitempty"`
 	} `json:"pastCommittees,omitempty"`
 	Actions struct {
 		Items []struct {
@@ -223,11 +223,11 @@ type Bill struct {
 			SequenceNo int    `json:"sequenceNo"`
 			Text       string `json:"text"`
 		} `json:"items,omitempty"`
-		Size int `json:"size"`
+		Size int `json:"size,omitempty"`
 	} `json:"actions"`
 	PreviousVersions struct {
 		Items []BillID `json:"items,omitempty"`
-		Size  int      `json:"size"`
+		Size  int      `json:"size,omitempty"`
 	} `json:"previousVersions,omitempty"`
 	CommitteeAgendas struct {
 		Items []struct {
@@ -240,18 +240,18 @@ type Bill struct {
 				Name    string `json:"name"`
 			} `json:"committeeId"`
 		} `json:"items,omitempty"`
-		Size int `json:"size"`
+		Size int `json:"size,omitempty"`
 	} `json:"committeeAgendas,omitempty"`
 	Calendars struct {
 		Items []struct {
 			Year           int `json:"year"`
 			CalendarNumber int `json:"calendarNumber"`
 		} `json:"items,omitempty"`
-		Size int `json:"size"`
+		Size int `json:"size,omitempty"`
 	} `json:"calendars,omitempty"`
 	BillInfoRefs struct {
-		Items interface{} `json:"items"`
-		Size  int         `json:"size"`
+		Items interface{} `json:"items,omitempty"`
+		Size  int         `json:"size,omitempty"`
 	} `json:"billInfoRefs,omitempty"`
 }
 
@@ -264,8 +264,8 @@ type BillVote struct {
 		Name    string `json:"name"`
 	} `json:"committee"`
 	MemberVotes struct {
-		Items MemberVotes `json:"items"`
-		Size  int         `json:"size"`
+		Items MemberVotes `json:"items,omitempty"`
+		Size  int         `json:"size,omitempty"`
 	} `json:"memberVotes"`
 }
 

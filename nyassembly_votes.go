@@ -17,6 +17,10 @@ import (
 //
 // https://nyassembly.gov/leg/?default_fld=&leg_video=&bn=A09275&term=2021&Committee%26nbspVotes=Y&Floor%26nbspVotes=Y
 func (a NYSenateAPI) AssemblyVotes(ctx context.Context, members []MemberEntry, session, printNo string) (*Bill, error) {
+	err := a.Limiter.Wait(ctx)
+	if err != nil {
+		return nil, err
+	}
 	u := "https://nyassembly.gov/leg/?" + url.Values{
 		"default_fld":         []string{""},
 		"leg_video":           []string{""},
@@ -38,7 +42,7 @@ func (a NYSenateAPI) AssemblyVotes(ctx context.Context, members []MemberEntry, s
 
 	var bill Bill
 	bill.Votes.Items, err = parseAssemblyVotes(resp.Body, members)
-	log.WithContext(ctx).WithField("nyassembly", u).WithField("votes", len(bill.Votes.Items)).Infof("looking up NYAssembly votes %s-%s", session, printNo)
+	log.WithContext(ctx).WithField("nyassembly", u).WithField("votes", len(bill.Votes.Items)).Debugf("looking up NYAssembly votes %s-%s", session, printNo)
 	return &bill, err
 }
 

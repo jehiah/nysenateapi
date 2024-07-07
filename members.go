@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Note: response might have duplicates
@@ -11,6 +13,7 @@ func (a NYSenateAPI) GetMembers(ctx context.Context, session string, c Chamber) 
 	if session == "" || c == "" {
 		return nil, nil
 	}
+	log.WithContext(ctx).WithField("session", session).WithField("chamber", c).Debugf("GetMembers session:%s", session)
 	path := fmt.Sprintf("/api/3/members/%s/%s", url.PathEscape(session), url.PathEscape(string(c)))
 	// senate is 63, assembly is 150
 	params := &url.Values{"full": []string{"true"}, "limit": []string{"200"}}

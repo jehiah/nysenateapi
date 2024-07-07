@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"time"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 )
 
 const apiDomain = "https://legislation.nysenate.gov"
@@ -18,12 +20,16 @@ func NewAPI(token string) *NYSenateAPI {
 	return &NYSenateAPI{
 		token:     token,
 		UserAgent: "https://github.com/jehiah/nysenateapi",
+		Limiter:   rate.NewLimiter(rate.Every(5*time.Millisecond), 25),
 	}
 }
 
 type NYSenateAPI struct {
 	token     string
 	UserAgent string
+
+	// Limiter throttles requests to the API
+	Limiter *rate.Limiter
 }
 
 // var Sessions = Sessions{
@@ -44,6 +50,10 @@ const SenateChamber Chamber = "senate"
 const AssemblyChamber Chamber = "assembly"
 
 func (a NYSenateAPI) get(ctx context.Context, path string, params *url.Values, v interface{}) error {
+	err := a.Limiter.Wait(ctx)
+	if err != nil {
+		return err
+	}
 	if params == nil {
 		params = &url.Values{}
 	}

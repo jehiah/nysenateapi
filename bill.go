@@ -16,7 +16,7 @@ func (a NYSenateAPI) Bills(ctx context.Context, session string, offset int) (*Bi
 	params := &url.Values{"offset": []string{fmt.Sprintf("%d", offset)}, "limit": []string{"1000"}}
 	path := fmt.Sprintf("/api/3/bills/%s", url.PathEscape(session))
 	var data BillsResponse
-	log.WithContext(ctx).WithField("session", session).Infof("looking for bills %s", session)
+	log.WithContext(ctx).WithField("offset", offset).WithField("session", session).Debugf("bills session:%s", session)
 	err := a.get(ctx, path, params, &data)
 	return &data, err
 }
@@ -29,6 +29,7 @@ func (a NYSenateAPI) GetBillUpdates(ctx context.Context, from, to time.Time) (*B
 	// /api/3/bills/updates/{fromDateTime}
 	// should be inputted as 2014-12-10T13:30:02.
 	// The fromDateTime and toDateTime range is exclusive/inclusive respectively.
+	log.WithContext(ctx).WithField("from", from).WithField("to", to).Debugf("bill updates")
 	path := fmt.Sprintf("/api/3/bills/updates/%s/%s", from.Format(timeFormat), to.Format(timeFormat))
 	params := &url.Values{}
 	params.Set("type", "processed")
@@ -100,7 +101,7 @@ func (a NYSenateAPI) GetBill(ctx context.Context, session, printNo string) (*Bil
 	params.Set("view", "with_refs")
 	path := fmt.Sprintf("/api/3/bills/%s/%s", url.PathEscape(session), url.PathEscape(printNo))
 	var data BillResponse
-	log.WithContext(ctx).WithField("session", session).WithField("printNo", printNo).Infof("looking up bill %s-%s", session, printNo)
+	log.WithContext(ctx).WithField("session", session).WithField("printNo", printNo).Debugf("looking up bill %s-%s", session, printNo)
 	err := a.get(ctx, path, params, &data)
 	return &(data.Bill), err
 }

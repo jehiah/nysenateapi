@@ -13,4 +13,8 @@ func TestGetBill(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("%#v", b)
+	b, err = a.GetBill(context.Background(), "2023", "A1610")
+	if err != nil {
+		t.Fatal(err)
+	}
 }

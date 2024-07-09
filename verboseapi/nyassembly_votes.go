@@ -16,7 +16,7 @@ import (
 // see https://github.com/nysenate/OpenLegislation/issues/122
 //
 // https://nyassembly.gov/leg/?default_fld=&leg_video=&bn=A09275&term=2021&Committee%26nbspVotes=Y&Floor%26nbspVotes=Y
-func (a NYSenateAPI) AssemblyVotes(ctx context.Context, members []MemberEntry, session, printNo string) (*Bill, error) {
+func (a NYSenateAPI) AssemblyVotes(ctx context.Context, members []MemberEntry, session, printNo string) ([]BillVote, error) {
 	err := a.Limiter.Wait(ctx)
 	if err != nil {
 		return nil, err
@@ -40,10 +40,9 @@ func (a NYSenateAPI) AssemblyVotes(ctx context.Context, members []MemberEntry, s
 	}
 	defer resp.Body.Close()
 
-	var bill Bill
-	bill.Votes.Items, err = parseAssemblyVotes(resp.Body, members)
-	log.WithContext(ctx).WithField("nyassembly", u).WithField("votes", len(bill.Votes.Items)).Debugf("looking up NYAssembly votes %s-%s", session, printNo)
-	return &bill, err
+	votes, err := parseAssemblyVotes(resp.Body, members)
+	log.WithContext(ctx).WithField("nyassembly", u).WithField("votes", len(votes)).Debugf("looking up NYAssembly votes %s-%s", session, printNo)
+	return votes, err
 }
 
 func parseAssemblyVotes(r io.Reader, members []MemberEntry) ([]BillVote, error) {

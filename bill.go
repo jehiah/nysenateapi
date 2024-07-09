@@ -1,6 +1,7 @@
 package nysenateapi
 
 import (
+	"sort"
 	"time"
 
 	"github.com/jehiah/nysenateapi/verboseapi"
@@ -104,12 +105,15 @@ func newBill(b *verboseapi.Bill) *Bill {
 		})
 	}
 	// sponsors (including multi-sponsors, etc)
-	seen := map[int]bool{b.Sponsor.Member.MemberID: true}
-	bill.Sponsors = append(bill.Sponsors, Sponsor{
-		ID:        b.Sponsor.Member.MemberID,
-		FullName:  b.Sponsor.Member.FullName,
-		ShortName: b.Sponsor.Member.ShortName,
-	})
+	seen := map[int]bool{}
+	if b.Sponsor.Member.MemberID > 0 {
+		seen[b.Sponsor.Member.MemberID] = true
+		bill.Sponsors = append(bill.Sponsors, Sponsor{
+			ID:        b.Sponsor.Member.MemberID,
+			FullName:  b.Sponsor.Member.FullName,
+			ShortName: b.Sponsor.Member.ShortName,
+		})
+	}
 	for _, s := range b.Amendments.Items[b.ActiveVersion].MultiSponsors.Items {
 		if seen[s.MemberID] {
 			continue
@@ -135,9 +139,20 @@ func newBill(b *verboseapi.Bill) *Bill {
 	if b.Amendments.Items[b.ActiveVersion].SameAs.Size > 0 {
 		bill.SameAsPrintNo = b.Amendments.Items[b.ActiveVersion].SameAs.Items[0].BasePrintNoStr
 	}
-	// votes
-	for _, v := range b.Votes.Items {
-		bill.Votes = append(bill.Votes, Vote{
+	bill.Votes = newVotes(b.Votes.Items)
+	// previousVersions
+	sort.Slice(b.PreviousVersions.Items, func(i, j int) bool { return b.PreviousVersions.Items[i].Session < b.PreviousVersions.Items[j].Session })
+	for _, v := range b.PreviousVersions.Items {
+		bill.PreviousVersions = append(bill.PreviousVersions, v.BasePrintNoStr) // i.e. S1234-2020
+	}
+
+	return bill
+}
+
+func newVotes(bv []verboseapi.BillVote) []Vote {
+	var o []Vote
+	for _, v := range bv {
+		o = append(o, Vote{
 			VoteType:  v.VoteType,
 			Date:      parseTime(v.VoteDate),
 			Version:   v.Version,
@@ -146,8 +161,7 @@ func newBill(b *verboseapi.Bill) *Bill {
 			Votes:     newVoteEntries(v.MemberVotes.Items),
 		})
 	}
-
-	return bill
+	return o
 }
 
 func newVoteEntries(v verboseapi.MemberVotes) []VoteEntry {

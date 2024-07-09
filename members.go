@@ -90,14 +90,14 @@ type MemberEntry struct {
 	ShortName       string `json:"shortName"`
 	Chamber         string `json:"chamber"` // SENATE
 	DistrictCode    int    `json:"districtCode"`
-	Alternate       bool   `json:"alternate"`
+	Alternate       bool   `json:"alternate,omitempty"`
 	SessionYear     int    `json:"sessionYear"`
 	SessionMemberID int    `json:"sessionMemberId,omitempty"`
 }
 
 type MemberEntryList struct {
-	Items []MemberEntry `json:"items"`
-	Size  int           `json:"size"`
+	Items []MemberEntry `json:"items,omitempty"`
+	Size  int           `json:"size,omitempty"`
 }
 
 type Person struct {

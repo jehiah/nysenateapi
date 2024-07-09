@@ -53,8 +53,8 @@ type BillReference struct {
 }
 
 type BillID struct {
-	BasePrintNo    string `json:"basePrintNo"`
-	Session        int    `json:"session"`
+	BasePrintNo    string `json:"basePrintNo,omitempty"`
+	Session        int    `json:"session,omitempty"`
 	BasePrintNoStr string `json:"basePrintNoStr,omitempty"`
 	PrintNo        string `json:"printNo,omitempty"`
 	Version        string `json:"version,omitempty"`
@@ -168,8 +168,8 @@ type Bill struct {
 			ActClause        string          `json:"actClause"`
 			FullTextFormats  []string        `json:"fullTextFormats"`
 			FullText         string          `json:"fullText"`
-			FullTextHTML     interface{}     `json:"fullTextHtml,omitempty"`
-			FullTextTemplate interface{}     `json:"fullTextTemplate,omitempty"`
+			FullTextHTML     string          `json:"fullTextHtml,omitempty"`
+			FullTextTemplate string          `json:"fullTextTemplate,omitempty"`
 			CoSponsors       MemberEntryList `json:"coSponsors"`
 			MultiSponsors    MemberEntryList `json:"multiSponsors"`
 			UniBill          bool            `json:"uniBill"`
@@ -199,13 +199,13 @@ type Bill struct {
 	} `json:"vetoMessages,omitempty"`
 	ApprovalMessage struct {
 		BillID         BillID `json:"billId,omitempty"`
-		Year           int    `json:"year"`
-		ApprovalNumber int    `json:"approvalNumber"`
-		Chapter        int    `json:"chapter"`
-		Signer         string `json:"signer"`
-		Text           string `json:"text"`
+		Year           int    `json:"year,omitempty"`
+		ApprovalNumber int    `json:"approvalNumber,omitempty"`
+		Chapter        int    `json:"chapter,omitempty"`
+		Signer         string `json:"signer,omitempty"`
+		Text           string `json:"text,omitempty"`
 	} `json:"approvalMessage,omitempty"`
-	AdditionalSponsors MemberEntryList `json:"additionalSponsors"`
+	AdditionalSponsors MemberEntryList `json:"additionalSponsors,omitempty"`
 	PastCommittees     struct {
 		Items []struct {
 			Chamber       string `json:"chamber"`
@@ -260,9 +260,9 @@ type BillVote struct {
 	VoteType  string `json:"voteType"`
 	VoteDate  string `json:"voteDate"`
 	Committee struct {
-		Chamber string `json:"chamber"`
-		Name    string `json:"name"`
-	} `json:"committee"`
+		Chamber string `json:"chamber,omitempty"`
+		Name    string `json:"name,omitempty"`
+	} `json:"committee,omitempty"`
 	MemberVotes struct {
 		Items MemberVotes `json:"items,omitempty"`
 		Size  int         `json:"size,omitempty"`
@@ -270,9 +270,9 @@ type BillVote struct {
 }
 
 type MemberVotes struct {
-	Aye                 MemberEntryList `json:"AYE"`
-	AyeWithReservations MemberEntryList `json:"AYEWR"`
-	Nay                 MemberEntryList `json:"NAY"` // ?
-	Excused             MemberEntryList `json:"EXC"` // excused
-	Absent              MemberEntryList `json:"Absent"`
+	Aye                 MemberEntryList `json:"AYE,omitempty"`
+	AyeWithReservations MemberEntryList `json:"AYEWR,omitempty"`
+	Nay                 MemberEntryList `json:"NAY,omitempty"` // ?
+	Excused             MemberEntryList `json:"EXC,omitempty"` // excused
+	Absent              MemberEntryList `json:"Absent,omitempty"`
 }

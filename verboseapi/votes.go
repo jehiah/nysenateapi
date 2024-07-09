@@ -1,4 +1,4 @@
-package nysenateapi
+package verboseapi
 
 type VoteEntry struct {
 	MemberID  int

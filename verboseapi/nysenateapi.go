@@ -1,4 +1,4 @@
-package nysenateapi
+package verboseapi
 
 import (
 	"context"

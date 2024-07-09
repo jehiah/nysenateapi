@@ -12,9 +12,9 @@ type BillReference struct {
 }
 
 type Bill struct {
-	PrintNo    string `json:"PrintNo,omitempty"`
+	PrintNo    string `json:"PrintNo"`
 	Version    string `json:"Version,omitempty"`
-	Session    int    `json:"Session,omitempty"`
+	Session    int    `json:"Session"`
 	Chamber    string `json:"Chamber,omitempty"`
 	BillType   string `json:"BillType,omitempty"`
 	Resolution bool   `json:"Resolution,omitempty"`
@@ -41,7 +41,7 @@ type Bill struct {
 type Milestone struct {
 	Type      string
 	Date      time.Time
-	Committee string
+	Committee string `json:"Committee,omitempty"`
 }
 
 type Sponsor struct {
@@ -58,8 +58,9 @@ type Vote struct {
 	Votes     []VoteEntry
 }
 type VoteEntry struct {
-	MemberID  int
-	ShortName string
+	ID        int
+	FullName  string `json:"FullName,omitempty"`
+	ShortName string `json:"ShortName,omitempty"`
 	Vote      string // Aye, Nay, Excused
 }
 
@@ -155,36 +156,41 @@ func newVoteEntries(v verboseapi.MemberVotes) []VoteEntry {
 	for _, m := range v.Excused.Items {
 		o = append(o, VoteEntry{
 			ShortName: m.ShortName,
-			MemberID:  m.MemberID,
+			FullName:  m.FullName,
+			ID:        m.MemberID,
 			Vote:      "Excused",
 		})
 	}
 	for _, m := range v.Aye.Items {
 		o = append(o, VoteEntry{
+			ID:        m.MemberID,
 			ShortName: m.ShortName,
-			MemberID:  m.MemberID,
+			FullName:  m.FullName,
 			Vote:      "Aye",
 		})
 	}
 	for _, m := range v.Nay.Items {
 		o = append(o, VoteEntry{
+			ID:        m.MemberID,
 			ShortName: m.ShortName,
-			MemberID:  m.MemberID,
+			FullName:  m.FullName,
 			Vote:      "Nay",
 		})
 	}
 	for _, m := range v.AyeWithReservations.Items {
 		o = append(o, VoteEntry{
+			ID:        m.MemberID,
 			ShortName: m.ShortName,
-			MemberID:  m.MemberID,
+			FullName:  m.FullName,
 			Vote:      "Aye",
 			// TODO: add note "with reservations"
 		})
 	}
 	for _, m := range v.Absent.Items {
 		o = append(o, VoteEntry{
+			ID:        m.MemberID,
 			ShortName: m.ShortName,
-			MemberID:  m.MemberID,
+			FullName:  m.FullName,
 			Vote:      "Absent",
 		})
 	}

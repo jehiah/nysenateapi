@@ -6,6 +6,7 @@ type VoteEntry struct {
 	VoteType  string // COMMITTEE, FLOOR
 	Vote      string // Aye, Nay, Excused
 	ShortName string
+	FullName  string
 }
 type VoteEntries []VoteEntry
 
@@ -40,6 +41,7 @@ func (b Bill) GetVotes() VoteEntries {
 		for _, m := range v.MemberVotes.Items.Aye.Items {
 			o = append(o, VoteEntry{
 				ShortName: m.ShortName,
+				FullName:  m.FullName,
 				MemberID:  m.MemberID,
 				Chamber:   m.Chamber,
 				VoteType:  v.VoteType,
@@ -49,6 +51,7 @@ func (b Bill) GetVotes() VoteEntries {
 		for _, m := range v.MemberVotes.Items.Nay.Items {
 			o = append(o, VoteEntry{
 				ShortName: m.ShortName,
+				FullName:  m.FullName,
 				MemberID:  m.MemberID,
 				Chamber:   m.Chamber,
 				VoteType:  v.VoteType,
@@ -58,6 +61,7 @@ func (b Bill) GetVotes() VoteEntries {
 		for _, m := range v.MemberVotes.Items.AyeWithReservations.Items {
 			o = append(o, VoteEntry{
 				ShortName: m.ShortName,
+				FullName:  m.FullName,
 				MemberID:  m.MemberID,
 				Chamber:   m.Chamber,
 				VoteType:  v.VoteType,
@@ -68,6 +72,7 @@ func (b Bill) GetVotes() VoteEntries {
 		for _, m := range v.MemberVotes.Items.Absent.Items {
 			o = append(o, VoteEntry{
 				ShortName: m.ShortName,
+				FullName:  m.FullName,
 				MemberID:  m.MemberID,
 				Chamber:   m.Chamber,
 				VoteType:  v.VoteType,

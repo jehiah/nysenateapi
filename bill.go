@@ -74,7 +74,7 @@ type Action struct {
 
 func newBill(b *verboseapi.Bill) *Bill {
 	bill := &Bill{
-		PrintNo:    b.PrintNo,
+		PrintNo:    b.BasePrintNo,
 		Version:    b.ActiveVersion,
 		Session:    b.Session,
 		Chamber:    b.BillType.Chamber,

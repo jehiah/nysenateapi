@@ -68,7 +68,7 @@ type BillsResponse struct {
 	Bills []BillReference
 }
 
-func (a API) GetBillUpdates(ctx context.Context, from, to time.Time) (BillsResponse, error) {
+func (a *API) GetBillUpdates(ctx context.Context, from, to time.Time) (BillsResponse, error) {
 	var out BillsResponse
 	resp, err := a.api.GetBillUpdates(ctx, from, to)
 	if err != nil {
@@ -83,7 +83,7 @@ func (a API) GetBillUpdates(ctx context.Context, from, to time.Time) (BillsRespo
 	return out, nil
 }
 
-func (a API) Bills(ctx context.Context, session string, offset int) (BillsResponse, error) {
+func (a *API) Bills(ctx context.Context, session string, offset int) (BillsResponse, error) {
 	var out BillsResponse
 	resp, err := a.api.Bills(ctx, session, offset)
 	if err != nil {

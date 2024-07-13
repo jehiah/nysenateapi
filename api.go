@@ -16,6 +16,13 @@ type API struct {
 	assemblyMembers map[int][]verboseapi.MemberEntry
 }
 
+func NewWithVerboseAPI(api *verboseapi.NYSenateAPI) *API {
+	return &API{
+		api:             api,
+		assemblyMembers: make(map[int][]verboseapi.MemberEntry),
+	}
+}
+
 func NewAPI(token string) *API {
 	return &API{
 		api:             verboseapi.NewAPI(token),

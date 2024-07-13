@@ -171,20 +171,21 @@ func newVotes(bv []verboseapi.BillVote) []Vote {
 func newVoteEntries(v verboseapi.MemberVotes) []VoteEntry {
 	var o []VoteEntry
 	// TODO: dedupe
-	for _, m := range v.Excused.Items {
-		o = append(o, VoteEntry{
-			ID:    m.MemberID,
-			Short: m.ShortName,
-			Name:  m.FullName,
-			Vote:  "Excused",
-		})
-	}
 	for _, m := range v.Aye.Items {
 		o = append(o, VoteEntry{
 			ID:    m.MemberID,
 			Short: m.ShortName,
 			Name:  m.FullName,
 			Vote:  "Aye",
+		})
+	}
+	for _, m := range v.AyeWithReservations.Items {
+		o = append(o, VoteEntry{
+			ID:    m.MemberID,
+			Short: m.ShortName,
+			Name:  m.FullName,
+			Vote:  "Aye",
+			// TODO: add note "with reservations"
 		})
 	}
 	for _, m := range v.Nay.Items {
@@ -195,13 +196,12 @@ func newVoteEntries(v verboseapi.MemberVotes) []VoteEntry {
 			Vote:  "Nay",
 		})
 	}
-	for _, m := range v.AyeWithReservations.Items {
+	for _, m := range v.Excused.Items {
 		o = append(o, VoteEntry{
 			ID:    m.MemberID,
 			Short: m.ShortName,
 			Name:  m.FullName,
-			Vote:  "Aye",
-			// TODO: add note "with reservations"
+			Vote:  "Excused",
 		})
 	}
 	for _, m := range v.Absent.Items {

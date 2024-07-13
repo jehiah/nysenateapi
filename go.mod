@@ -3,6 +3,7 @@ module github.com/jehiah/nysenateapi
 go 1.22
 
 require (
+	cloud.google.com/go v0.115.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.27.0

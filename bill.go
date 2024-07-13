@@ -2,8 +2,10 @@ package nysenateapi
 
 import (
 	"sort"
+	"strings"
 	"time"
 
+	"cloud.google.com/go/civil"
 	"github.com/jehiah/nysenateapi/verboseapi"
 )
 
@@ -41,36 +43,38 @@ type Bill struct {
 
 type Milestone struct {
 	Type      string
-	Date      time.Time
+	Date      civil.Date
 	Committee string `json:"Committee,omitempty"`
 }
 
 type Sponsor struct {
-	ID        int
-	FullName  string
-	ShortName string
+	ID    int
+	Name  string
+	Short string
 }
 type Vote struct {
 	VoteType  string // COMMITTEE, FLOOR
-	Date      time.Time
-	Version   string
+	Date      civil.Date
+	Version   string `json:"Version,omitempty"`
 	Chamber   string `json:"Chamber,omitempty"`
-	Committee string
+	Committee string `json:"Committee,omitempty"`
 	Votes     []VoteEntry
 }
 type VoteEntry struct {
-	ID        int
-	FullName  string `json:"FullName,omitempty"`
-	ShortName string `json:"ShortName,omitempty"`
-	Vote      string // Aye, Nay, Excused
+	ID    int
+	Name  string `json:"Name,omitempty"`
+	Short string `json:"Short,omitempty"`
+	Vote  string // Aye, Nay, Excused
 }
 
 type Action struct {
-	Text    string    `json:"Text,omitempty"`
-	Date    time.Time `json:"Date,omitempty"`
-	Chamber string    `json:"Chamber,omitempty"`
-	Version string    `json:"Version,omitempty"`
+	Text    string     `json:"Text,omitempty"`
+	Date    civil.Date `json:"Date,omitempty"`
+	Chamber string     `json:"Chamber,omitempty"`
+	Version string     `json:"Version,omitempty"`
 }
+
+var newlineReplacer = strings.NewReplacer("\n", " ")
 
 func newBill(b *verboseapi.Bill) *Bill {
 	bill := &Bill{
@@ -87,19 +91,19 @@ func newBill(b *verboseapi.Bill) *Bill {
 		Summary:    b.Summary,
 		LawSection: b.Amendments.Items[b.ActiveVersion].LawSection,
 		LawCode:    b.Amendments.Items[b.ActiveVersion].LawCode,
-		ActClause:  b.Amendments.Items[b.ActiveVersion].ActClause,
+		ActClause:  newlineReplacer.Replace(b.Amendments.Items[b.ActiveVersion].ActClause),
 	}
 	for _, m := range b.Milestones.Items {
 		bill.Milestones = append(bill.Milestones, Milestone{
 			Type:      m.StatusType,
-			Date:      parseTime(m.ActionDate),
+			Date:      civil.DateOf(parseTime(m.ActionDate)),
 			Committee: m.CommitteeName,
 		})
 	}
 	for _, m := range b.Actions.Items {
 		bill.Actions = append(bill.Actions, Action{
 			Text:    m.Text,
-			Date:    parseTime(m.Date),
+			Date:    civil.DateOf(parseTime(m.Date)),
 			Chamber: m.Chamber,
 			Version: m.BillID.Version,
 		})
@@ -109,9 +113,9 @@ func newBill(b *verboseapi.Bill) *Bill {
 	if b.Sponsor.Member.MemberID > 0 {
 		seen[b.Sponsor.Member.MemberID] = true
 		bill.Sponsors = append(bill.Sponsors, Sponsor{
-			ID:        b.Sponsor.Member.MemberID,
-			FullName:  b.Sponsor.Member.FullName,
-			ShortName: b.Sponsor.Member.ShortName,
+			ID:    b.Sponsor.Member.MemberID,
+			Name:  b.Sponsor.Member.FullName,
+			Short: b.Sponsor.Member.ShortName,
 		})
 	}
 	for _, s := range b.Amendments.Items[b.ActiveVersion].MultiSponsors.Items {
@@ -120,9 +124,9 @@ func newBill(b *verboseapi.Bill) *Bill {
 		}
 		seen[s.MemberID] = true
 		bill.Sponsors = append(bill.Sponsors, Sponsor{
-			ID:        s.MemberID,
-			FullName:  s.FullName,
-			ShortName: s.ShortName,
+			ID:    s.MemberID,
+			Name:  s.FullName,
+			Short: s.ShortName,
 		})
 	}
 	for _, s := range b.Amendments.Items[b.ActiveVersion].CoSponsors.Items {
@@ -131,9 +135,9 @@ func newBill(b *verboseapi.Bill) *Bill {
 		}
 		seen[s.MemberID] = true
 		bill.Sponsors = append(bill.Sponsors, Sponsor{
-			ID:        s.MemberID,
-			FullName:  s.FullName,
-			ShortName: s.ShortName,
+			ID:    s.MemberID,
+			Name:  s.FullName,
+			Short: s.ShortName,
 		})
 	}
 	if b.Amendments.Items[b.ActiveVersion].SameAs.Size > 0 {
@@ -154,7 +158,7 @@ func newVotes(bv []verboseapi.BillVote) []Vote {
 	for _, v := range bv {
 		o = append(o, Vote{
 			VoteType:  v.VoteType,
-			Date:      parseTime(v.VoteDate),
+			Date:      civil.DateOf(parseTime(v.VoteDate)),
 			Version:   v.Version,
 			Chamber:   v.Committee.Chamber,
 			Committee: v.Committee.Name,
@@ -169,43 +173,43 @@ func newVoteEntries(v verboseapi.MemberVotes) []VoteEntry {
 	// TODO: dedupe
 	for _, m := range v.Excused.Items {
 		o = append(o, VoteEntry{
-			ShortName: m.ShortName,
-			FullName:  m.FullName,
-			ID:        m.MemberID,
-			Vote:      "Excused",
+			ID:    m.MemberID,
+			Short: m.ShortName,
+			Name:  m.FullName,
+			Vote:  "Excused",
 		})
 	}
 	for _, m := range v.Aye.Items {
 		o = append(o, VoteEntry{
-			ID:        m.MemberID,
-			ShortName: m.ShortName,
-			FullName:  m.FullName,
-			Vote:      "Aye",
+			ID:    m.MemberID,
+			Short: m.ShortName,
+			Name:  m.FullName,
+			Vote:  "Aye",
 		})
 	}
 	for _, m := range v.Nay.Items {
 		o = append(o, VoteEntry{
-			ID:        m.MemberID,
-			ShortName: m.ShortName,
-			FullName:  m.FullName,
-			Vote:      "Nay",
+			ID:    m.MemberID,
+			Short: m.ShortName,
+			Name:  m.FullName,
+			Vote:  "Nay",
 		})
 	}
 	for _, m := range v.AyeWithReservations.Items {
 		o = append(o, VoteEntry{
-			ID:        m.MemberID,
-			ShortName: m.ShortName,
-			FullName:  m.FullName,
-			Vote:      "Aye",
+			ID:    m.MemberID,
+			Short: m.ShortName,
+			Name:  m.FullName,
+			Vote:  "Aye",
 			// TODO: add note "with reservations"
 		})
 	}
 	for _, m := range v.Absent.Items {
 		o = append(o, VoteEntry{
-			ID:        m.MemberID,
-			ShortName: m.ShortName,
-			FullName:  m.FullName,
-			Vote:      "Absent",
+			ID:    m.MemberID,
+			Short: m.ShortName,
+			Name:  m.FullName,
+			Vote:  "Absent",
 		})
 	}
 	// TODO: Abstained ?

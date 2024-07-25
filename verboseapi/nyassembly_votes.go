@@ -67,18 +67,19 @@ func parseAssemblyVotes(r io.Reader, members []MemberEntry) ([]BillVote, error) 
 			}
 			return out, err
 		case html.TextToken:
+			tokenText := strings.TrimSpace(token.Data)
 			text += strings.TrimSpace(token.Data)
 			switch {
-			case inCaption && text == "DATE:":
+			case inCaption && tokenText == "DATE:":
 				dateNext = true
-			case inCaption && text == "Committee:":
+			case inCaption && tokenText == "Committee:":
 				committeeNext = true
 			case inCaption && committeeNext:
 				commitee, _, _ = strings.Cut(token.Data, "Chair:")
 				commitee = strings.TrimSpace(commitee)
 				committeeNext = false
 			case inCaption && dateNext:
-				dateStr = text
+				dateStr = tokenText
 				dateNext = false
 			case inCaption:
 				caption += token.Data

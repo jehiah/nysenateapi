@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
@@ -79,7 +80,12 @@ func parseAssemblyVotes(r io.Reader, members []MemberEntry) ([]BillVote, error) 
 				commitee = strings.TrimSpace(commitee)
 				committeeNext = false
 			case inCaption && dateNext:
-				dateStr = tokenText
+				dt, err := time.Parse("01/02/2006", tokenText)
+				if err == nil {
+					dateStr = dt.Format("2006-01-02")
+				} else {
+					log.WithField("date", tokenText).Warnf("unable to parse %s", err)
+				}
 				dateNext = false
 			case inCaption:
 				caption += token.Data

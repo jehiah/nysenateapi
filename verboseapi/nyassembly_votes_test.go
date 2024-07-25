@@ -45,7 +45,7 @@ func TestAssemblyVotes(t *testing.T) {
 	}
 	t.Logf("%#v", assemblyVotes[0])
 	date := assemblyVotes[0].VoteDate
-	if date != "05/14/2024" {
+	if date != "2024-05-14" {
 		t.Fatalf("expected date got %q", date)
 	}
 

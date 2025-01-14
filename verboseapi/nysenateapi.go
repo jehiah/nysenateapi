@@ -32,18 +32,6 @@ type NYSenateAPI struct {
 	Limiter *rate.Limiter
 }
 
-// var Sessions = Sessions{
-// 	{2023, 2024},
-// 	{2021, 2022},
-// 	{2019, 2020},
-// 	{2017, 2018},
-// 	{2015, 2016},
-// 	{2013, 2014},
-// 	{2011, 2012},
-// 	{2009, 2010},
-// 	{2007, 2008},
-// }
-
 type Chamber string
 
 const SenateChamber Chamber = "senate"

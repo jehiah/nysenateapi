@@ -25,7 +25,7 @@ const timeFormat = "2006-01-02T15:04:05"
 
 // GetBillUpdates returns a list of bills that have been updated in the given time range.
 // https://legislation.nysenate.gov/static/docs/html/bills.html#detailed-update-digests
-func (a NYSenateAPI) GetBillUpdates(ctx context.Context, from, to time.Time) (*BillUpdateResponse, error) {
+func (a NYSenateAPI) GetBillUpdates(ctx context.Context, from, to time.Time, offset int) (*BillUpdateResponse, error) {
 	// /api/3/bills/updates/{fromDateTime}
 	// should be inputted as 2014-12-10T13:30:02.
 	// The fromDateTime and toDateTime range is exclusive/inclusive respectively.
@@ -34,6 +34,9 @@ func (a NYSenateAPI) GetBillUpdates(ctx context.Context, from, to time.Time) (*B
 	params := &url.Values{}
 	params.Set("type", "processed")
 	params.Set("detail", "false")
+	if offset > 1 {
+		params.Set("offset", fmt.Sprintf("%d", offset))
+	}
 	var data BillUpdateResponse
 	err := a.get(ctx, path, params, &data)
 	return &data, err

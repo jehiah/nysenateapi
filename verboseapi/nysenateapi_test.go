@@ -27,7 +27,7 @@ func TestBills(t *testing.T) {
 func TestBillUpdates(t *testing.T) {
 	a := NewAPI(os.Getenv("NY_SENATE_TOKEN"))
 	from := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
-	updates, err := a.GetBillUpdates(context.Background(), from, from.Add(time.Hour*24*7))
+	updates, err := a.GetBillUpdates(context.Background(), from, from.Add(time.Hour*24*7), 0)
 	if err != nil {
 		t.Fatal(err)
 	}

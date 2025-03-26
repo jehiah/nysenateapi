@@ -71,16 +71,30 @@ func (a *API) getAssemblyMembers(ctx context.Context, session int) ([]verboseapi
 	return members, nil
 }
 
+type Envelope struct {
+	OffsetStart int `json:"OffsetStart"`
+	OffsetEnd   int `json:"OffsetEnd"`
+}
+
+func newEnvelope(e verboseapi.Envelope) Envelope {
+	return Envelope{
+		OffsetStart: e.OffsetStart,
+		OffsetEnd:   e.OffsetEnd,
+	}
+}
+
 type BillsResponse struct {
+	Envelope
 	Bills []BillReference
 }
 
-func (a *API) GetBillUpdates(ctx context.Context, from, to time.Time) (BillsResponse, error) {
+func (a *API) GetBillUpdates(ctx context.Context, from, to time.Time, offset int) (BillsResponse, error) {
 	var out BillsResponse
-	resp, err := a.api.GetBillUpdates(ctx, from, to)
+	resp, err := a.api.GetBillUpdates(ctx, from, to, offset)
 	if err != nil {
 		return out, err
 	}
+	out.Envelope = newEnvelope(resp.Envelope)
 	for _, bill := range resp.Result.Items {
 		out.Bills = append(out.Bills, BillReference{
 			PrintNo: bill.ID.BasePrintNo,
